@@ -32,7 +32,7 @@ jobs:
       - name: Comment on new issue
         uses: peter-evans/create-or-update-comment@v1
         with:
-          issue-number: ${{ github.event.issue.number }}
+          issue-number: ${{ github.event.issue.number }}  # Ensure the issue number is passed correctly
           body: |
             🙏 Thanks for opening this issue! We'll take a look as soon as possible.
 
