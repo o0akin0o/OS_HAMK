@@ -1,49 +1,46 @@
-name: Auto Issue and PR Comment
-
-on:
+name: Label & comment issues #the name of the workflow
+on: # This action will trigger when an issue is reopened or opened.
   issues:
-    types: [closed]
-  pull_request:
-    types: [opened]
+    types:
+      - reopened
+      - opened
+      - closed
+jobs: # The jobs that run in this workflow
+  label_issues: # the first job is named as label_issues
+    runs-on: ubuntu-latest # This job will run on the latest version of Ubuntu.
+    permissions: # This job requires write access to issues in order to add labels and comment.
+      issues: write
+    steps: # The "steps" section contains the individual tasks that will be performed in this job.
+      - name: attach label to issues # The name of the step
+        uses: actions/github-script@v6 # This step uses the "actions/github-script" action to execute a script that adds labels to the issue.
+        with:
+          script: | # The script calls the GitHub REST API to add labels to the issue.
+            github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ["issue", "fix"]
+            })
+      - name: Comment on new issue #this is another step that comments on the issue 
+        uses: peter-evans/create-or-update-comment@v1 # This step uses the "peter-evans/create-or-update-comment" action to create or update a comment on the issue.
+        with:
+          issue-number: ${{ github.event.issue.number }} # The issue number is obtained from the context of the event that triggered the action.
+          body: | # The body of the comment is a message thanking the user for opening the issue.
+           #Thanks for opening this issue! We'll take a look as soon as possible.
 
-jobs:
-  issue-closed-comment:
-    if: github.event_name == 'issues'
+# Comment on when an issue is closed
+  issue_closed:
+    if: github.event.action == 'completed' # This job will run only if the issue is closed.
     runs-on: ubuntu-latest
     steps:
-      - name: Comment on closed issue
+      - name: Comment on closed issue # This step comments on the closed issue.
         uses: actions/github-script@v7
         with:
-          script: |
+          script: | # The script calls the GitHub REST API to create a comment on the closed issue.
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: "The issue is now resolved."
-            })
-
-  first-pr-comment:
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check and comment if it's the first PR
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const { data: pulls } = await github.rest.pulls.list({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              per_page: 100
-            });
-
-            const user = context.payload.pull_request.user.login;
-            const firstTime = pulls.filter(pr => pr.user.login === user).length === 1;
-
-            if (firstTime) {
-              github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: `🎉 Congratulations @${user} on opening your first pull request!`
-              });
-            }
+              body: '👋 The issue is now closed!'
+            })            
+# Comment on when an users opens the first pull request 
