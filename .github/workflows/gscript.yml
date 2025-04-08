@@ -1,6 +1,5 @@
 name: Label & comment issues
 
-# Comment on when an issue is opened or reopened
 on:
   issues:
     types:
@@ -12,12 +11,12 @@ on:
       - opened
 
 jobs:
-  # Label & comment on new or reopened issues
   label_issues:
     if: github.event.action == 'opened' || github.event.action == 'reopened'
     runs-on: ubuntu-latest
     permissions:
-      issues: write
+      issues: write   # Ensure the workflow has write access to issues
+      pull-requests: write  # Permissions to comment on pull requests
     steps:
       - name: Attach label to issues
         uses: actions/github-script@v6
@@ -37,7 +36,7 @@ jobs:
           body: |
             🙏 Thanks for opening this issue! We'll take a look as soon as possible.
 
-  # Comment when an issue is closed
+  # Comment on closed issues
   issue_closed:
     if: github.event.action == 'closed'
     runs-on: ubuntu-latest
