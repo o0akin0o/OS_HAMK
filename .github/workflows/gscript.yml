@@ -11,7 +11,8 @@ on:
       - opened
 
 permissions:
-  issues: write
+  issues: write  # This allows labeling issues and writing comments
+  pull_requests: write  # This allows creating comments on pull requests
 
 jobs:
   label_issues:
