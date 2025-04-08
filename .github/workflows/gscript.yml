@@ -1,0 +1,49 @@
+name: Auto Issue and PR Comment
+
+on:
+  issues:
+    types: [closed]
+  pull_request:
+    types: [opened]
+
+jobs:
+  issue-closed-comment:
+    if: github.event_name == 'issues'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Comment on closed issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: "The issue is now resolved."
+            })
+
+  first-pr-comment:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check and comment if it's the first PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: pulls } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100
+            });
+
+            const user = context.payload.pull_request.user.login;
+            const firstTime = pulls.filter(pr => pr.user.login === user).length === 1;
+
+            if (firstTime) {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: `🎉 Congratulations @${user} on opening your first pull request!`
+              });
+            }
