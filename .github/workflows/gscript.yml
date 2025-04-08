@@ -1,12 +1,14 @@
 name: Label & comment issues
-
+# Comment on when an issue is opened or reopened
 on:
   issues:
     types:
       - reopened
       - opened
       - closed
-
+  pull_request:
+    types:
+      - opened
 jobs:
   label_issues:
     if: github.event.action == 'opened' || github.event.action == 'reopened'
@@ -32,6 +34,7 @@ jobs:
           body: |
             🙏 Thanks for opening this issue! We'll take a look as soon as possible.
 
+# Comment on when an issue is closed
   issue_closed:
     if: github.event.action == 'closed'
     runs-on: ubuntu-latest
@@ -48,3 +51,25 @@ jobs:
               repo: context.repo.repo,
               body: '✅ The issue is now closed. Thank you!'
             })
+
+# Comment on when an 1st full release is created
+ 
+  comment_on_first_pr:
+    if: github.event.action == 'opened'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Comment on first pull request
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const pr_number = context.payload.pull_request.number;
+            const comment = "🎉 Congratulations on opening your first pull request!";
+            await github.issues.createComment({
+              issue_number: pr_number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+ 
