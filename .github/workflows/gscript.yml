@@ -12,7 +12,6 @@ on:
 
 permissions:
   issues: write
-  pull_requests: write
 
 jobs:
   label_issues:
