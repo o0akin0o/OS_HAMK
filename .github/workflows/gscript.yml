@@ -1,18 +1,19 @@
-name: Label & comment issues
+name: Label & Comment Issues
 
 on:
   issues:
     types:
-      - reopened
       - opened
+      - reopened
       - closed
   pull_request:
     types:
       - opened
 
 permissions:
-  issues: write  # This allows labeling issues and writing comments
-  pull_requests: write  # This allows creating comments on pull requests
+  issues: write         # Permission to modify issues (e.g., add labels, comment)
+  pull-requests: write  # Permission to modify pull requests (e.g., add comments)
+  contents: read        # Permission to read repository contents, optional but useful for certain operations
 
 jobs:
   label_issues:
@@ -37,7 +38,6 @@ jobs:
           body: |
             🙏 Thanks for opening this issue! We'll take a look as soon as possible.
 
-  # Comment on closed issues
   issue_closed:
     if: github.event.action == 'closed'
     runs-on: ubuntu-latest
@@ -53,7 +53,6 @@ jobs:
               body: '✅ The issue is now closed. Thank you!'
             })
 
-  # Comment on first pull request
   comment_on_first_pr:
     if: github.event.action == 'opened'
     runs-on: ubuntu-latest
