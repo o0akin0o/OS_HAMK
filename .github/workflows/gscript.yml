@@ -15,8 +15,7 @@ jobs:
     if: github.event.action == 'opened' || github.event.action == 'reopened'
     runs-on: ubuntu-latest
     permissions:
-      issues: write   # Ensure the workflow has write access to issues
-      pull-requests: write  # Permissions to comment on pull requests
+      issues: write
     steps:
       - name: Attach label to issues
         uses: actions/github-script@v6
@@ -32,7 +31,7 @@ jobs:
       - name: Comment on new issue
         uses: peter-evans/create-or-update-comment@v1
         with:
-          issue-number: ${{ github.event.issue.number }}  # Ensure the issue number is passed correctly
+          issue-number: ${{ github.event.issue.number }}  # Pass the issue number correctly
           body: |
             🙏 Thanks for opening this issue! We'll take a look as soon as possible.
 
@@ -65,18 +64,18 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
+            const pr_number = context.payload.pull_request.number;
+            const author = context.payload.pull_request.user.login;
             const { data: pulls } = await github.rest.pulls.list({
               owner: context.repo.owner,
               repo: context.repo.repo,
               state: 'all'
             });
 
-            const author = context.payload.pull_request.user.login;
             const userPRs = pulls.filter(pr => pr.user.login === author);
-
             if (userPRs.length === 1) {
               await github.rest.issues.createComment({
-                issue_number: context.payload.pull_request.number,
+                issue_number: pr_number,  # For PR, we use the PR number as the issue number
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 body: `🎉 Congratulations @${author} on opening your first pull request! 🚀`
